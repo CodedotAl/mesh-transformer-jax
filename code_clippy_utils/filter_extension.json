@@ -1,0 +1,46 @@
+{
+    "additive_extensions" : [
+            "lisp",
+            "lsp",
+            "f",
+            "fs",
+            "sh",
+            "groovy",
+            "r",
+            "pl",
+            "html",
+            "css",
+            "sql",
+            "py",
+            "c",
+            "cpp",
+            "h",
+            "hpp",
+            "jl",
+            "java",
+            "js",
+            "ts",
+            "cs",
+            "go",
+            "rs",
+            "swift",
+            "php",
+            "dart",
+            "kt",
+            "m",
+            "hs",
+            "scala",
+            "sc",
+            "lua",
+            "rb"
+
+    ],
+    "deductive_extensions" :[
+        
+        "json",
+        "yml",
+        "yaml",
+        "jsonl"
+
+    ]
+}
