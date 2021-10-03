@@ -7,7 +7,7 @@ from pathlib import Path
 
 import ftfy
 import tensorflow as tf
-from lm_dataformat import Reader
+from dependencies.lm_dataformat import Reader
 from transformers import GPT2TokenizerFast
 from tqdm import tqdm
 
@@ -164,13 +164,16 @@ def prep_and_tokenize_generator(string_iterable, encoder, normalize_with_ftfy, n
     """
     Given strings, does data cleaning / tokenization and yields arrays of tokens
     """
-    for doc in string_iterable:
+    counter = 0
+    for doc in tqdm(string_iterable):
         if normalize_with_ftfy:  # fix text with ftfy if specified
             doc = ftfy.fix_text(doc, normalization='NFKC')
         if normalize_with_wikitext_detokenize:
             doc = wikitext_detokenizer(doc)
         tokens = encoder.encode(doc) + [encoder.eos_token_id]
         yield tokens
+
+        break
 
 
 def file_to_tokenized_docs_generator(file_path, encoder, args):
@@ -182,7 +185,6 @@ def file_to_tokenized_docs_generator(file_path, encoder, args):
     reader = Reader(file_path)
     string_iterable = reader.stream_data(threaded=False)
     string_iterable = eot_splitting_generator(string_iterable, encoder)
-
     token_list_gen = prep_and_tokenize_generator(string_iterable,
                                                  encoder,
                                                  normalize_with_ftfy=args.normalize_with_ftfy,
@@ -250,9 +252,7 @@ def create_tfrecords(files, args):
     random.seed(args.seed)
 
     all_sequences_across_epochs = []
-
     docs = read_files_to_tokenized_docs(files, args, encoder)
-
     full_seqs, trailing_data = chunk_and_finalize(docs, args, encoder)
 
     all_sequences_across_epochs.extend(full_seqs)
