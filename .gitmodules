@@ -1,3 +1,0 @@
-[submodule "dependencies"]
-	path = dependencies
-	url = https://github.com/reshinthadithyan/lm_dataformat.git
