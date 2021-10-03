@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument("name", type=str,
                         help="Name of output file will be {name}_{seqnum}.tfrecords, where seqnum is total sequence count")
     parser.add_argument("--output-dir", type=str, default="", help="Output directory (default: current directory)")
-
+    parser.add_argument("--model_name",type=str,help="HuggingFace Model to load the Tokenizer")
     cleaning_args = parser.add_argument_group('data cleaning arguments')
 
     cleaning_args.add_argument("--normalize-with-ftfy", action="store_true", help="Normalize text with ftfy")
@@ -245,7 +245,7 @@ def chunk_and_finalize(arrays, args, encoder):
 
 def create_tfrecords(files, args):
     GPT2TokenizerFast.max_model_input_sizes['gpt2'] = 1e20  # disables a misleading warning
-    encoder = GPT2TokenizerFast.from_pretrained('gpt2')
+    encoder = GPT2TokenizerFast.from_pretrained(args.model_name) #Add Model header to args parser.
 
     random.seed(args.seed)
 
