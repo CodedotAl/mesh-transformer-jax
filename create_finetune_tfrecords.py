@@ -177,7 +177,7 @@ def prep_and_tokenize_generator(string_iterable, encoder, normalize_with_ftfy, n
             doc = wikitext_detokenizer(doc)
         tokens = encoder.encode(doc) + [encoder.eos_token_id]
         #Reshinth - using reader.spl_split_token to split the file_name out
-        file_name = encoder.encode(doc.split(r"_#@#_")[0]) 
+        file_name = encoder.encode(doc.split(r"_#@#_")[0]+r" _#@#_\n") 
         yield tokens,file_name
         #TODO : For Testing purpose breaking the loop, make sure this is taken off.
 def file_to_tokenized_docs_generator(file_path, encoder, args):
