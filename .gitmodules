@@ -1,0 +1,3 @@
+[submodule "code_clippy_lm_dataformat"]
+	path = code_clippy_lm_dataformat
+	url = https://github.com/reshinthadithyan/code_clippy_lm_dataformat.git

@@ -2,16 +2,22 @@ import argparse
 import os
 import re
 import random
-
+import logging
 from pathlib import Path
 
 import ftfy
 import tensorflow as tf
-from dependencies.lm_dataformat import Reader
+#TODO: Add code_clippy_lm_dataformat to be used in the Reader
+from code_clippy_lm_dataformat.lm_dataformat import Reader
 from transformers import GPT2TokenizerFast
 from tqdm import tqdm
-
-
+from os.path import join
+# logging.basicConfig(filename=join(r"data_logs",r"filter_logs.txt"),
+#                             filemode='a',
+#                             format='%(asctime)s,%(msecs)d %(name)s %(message)s',
+#                             datefmt='%H:%M:%S',
+#                             level=logging.INFO)
+# logger = logging.getLogger('tf_records')
 def parse_args():
     parser = argparse.ArgumentParser(description="""
     Converts a text dataset into the training data format expected by the model.
@@ -164,25 +170,25 @@ def prep_and_tokenize_generator(string_iterable, encoder, normalize_with_ftfy, n
     """
     Given strings, does data cleaning / tokenization and yields arrays of tokens
     """
-    counter = 0
-    for doc in tqdm(string_iterable):
+    for doc in tqdm(string_iterable,leave=False):
         if normalize_with_ftfy:  # fix text with ftfy if specified
             doc = ftfy.fix_text(doc, normalization='NFKC')
         if normalize_with_wikitext_detokenize:
             doc = wikitext_detokenizer(doc)
         tokens = encoder.encode(doc) + [encoder.eos_token_id]
-        yield tokens
-
-        break
-
-
+        #Reshinth - using reader.spl_split_token to split the file_name out
+        file_name = encoder.encode(doc.split(r"_#@#_")[0]) 
+        yield tokens,file_name
+        #TODO : For Testing purpose breaking the loop, make sure this is taken off.
 def file_to_tokenized_docs_generator(file_path, encoder, args):
     """
     Given a file path, reads the file and tokenizes the contents
 
     Yields token arrays of arbitrary, unequal length
     """
-    reader = Reader(file_path)
+    reader = Reader(file_path,r"mesh-transformer-jax/code_clippy_lm_dataformat/lm_dataformat/extension.json") #hardcoded path
+    #Adding special token to split a file name out and share it with chunks
+
     string_iterable = reader.stream_data(threaded=False)
     string_iterable = eot_splitting_generator(string_iterable, encoder)
     token_list_gen = prep_and_tokenize_generator(string_iterable,
@@ -219,19 +225,24 @@ def arrays_to_sequences(token_list_iterable, sequence_length=2049):
     """
     accum = []
     for l in token_list_iterable:
+        file_name = l[1]
+        l = l[0]
         accum.extend(l)
 
         if len(accum) > sequence_length:
             chunks = split_list(accum, sequence_length)
             for chunk in chunks[:-1]:
-                yield chunk
+                yield file_name + chunk
             accum = chunks[-1]
 
     if len(accum) > 0:
-        yield accum
+        yield file_name + accum #adding file name as a part of data prompt
 
 
 def chunk_and_finalize(arrays, args, encoder):
+    """
+    chunking function to chunk the data to equal lengths
+    """
     sequences = list(arrays_to_sequences(arrays))
 
     full_seqs, trailing_data = sequences[:-1], sequences[-1]
