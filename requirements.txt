@@ -19,5 +19,4 @@ func_timeout
 ftfy
 fastapi
 uvicorn
-lm_dataformat
 pathy
