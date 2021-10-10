@@ -12,12 +12,13 @@ from code_clippy_lm_dataformat.lm_dataformat import Reader
 from transformers import GPT2TokenizerFast
 from tqdm import tqdm
 from os.path import join
-# logging.basicConfig(filename=join(r"data_logs",r"filter_logs.txt"),
-#                             filemode='a',
-#                             format='%(asctime)s,%(msecs)d %(name)s %(message)s',
-#                             datefmt='%H:%M:%S',
-#                             level=logging.INFO)
-# logger = logging.getLogger('tf_records')
+import json
+
+#GLOBAL
+DATA_STATS = {}
+#END-GLOBAL
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="""
     Converts a text dataset into the training data format expected by the model.
@@ -40,6 +41,7 @@ def parse_args():
     parser.add_argument("input_dir", type=str, help="Path to where your files are located.")
     parser.add_argument("name", type=str,
                         help="Name of output file will be {name}_{seqnum}.tfrecords, where seqnum is total sequence count")
+    parser.add_argument("--log_idt",type=str,help="Logging Statistics Identifier",default="train")
     parser.add_argument("--output-dir", type=str, default="", help="Output directory (default: current directory)")
     parser.add_argument("--model_name",type=str,help="HuggingFace Model to load the Tokenizer")
     cleaning_args = parser.add_argument_group('data cleaning arguments')
@@ -196,6 +198,7 @@ def file_to_tokenized_docs_generator(file_path, encoder, args):
                                                  normalize_with_ftfy=args.normalize_with_ftfy,
                                                  normalize_with_wikitext_detokenize=args.normalize_with_wikitext_detokenize
                                                  )
+    DATA_STATS[file_path] = (reader.filter_data_class.stat_extension)
     return token_list_gen
 
 
@@ -289,7 +292,18 @@ def create_tfrecords(files, args):
 
     fp = os.path.join(args.output_dir, f"{args.name}_{total_sequence_len}.tfrecords")
     write_tfrecord(all_sequences_across_epochs, fp)
+def log_stat_json(json_dict,file_idt="train"):
+    """
+    Logs with file_level stats and saves the file as file_idt
+    args:
+        json_dict (dict): Statistics Dictionary.
+        file_idt  (str) : File identifier key [train,test,eval]
 
+    """
+    log_stat_path = os.path.join(r"mesh-transformer-jax",r"stat_logs",r"pl_stat_"+file_idt+r".json")
+    with open(log_stat_path, 'w+') as f:
+        json.dump(json_dict, f)
+    return None
 
 if __name__ == "__main__":
     args = parse_args()
@@ -299,3 +313,4 @@ if __name__ == "__main__":
     files = get_files(args.input_dir)
 
     results = create_tfrecords(files, args)
+    log_stat_json(DATA_STATS,args.log_idt) #logging final file_level statistics
