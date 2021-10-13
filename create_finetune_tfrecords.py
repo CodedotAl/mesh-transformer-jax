@@ -23,7 +23,7 @@ logging.getLogger("transformers").setLevel(logging.ERROR)
 parser = argparse.ArgumentParser()
 parser.add_argument("--input_dir", type=str, help="Path to where your files are located. Files ending in .zst are "
                                                   "treated as archives, all others as raw text.")
-parser.add_argument("--files_per", type=int, default=10000, help="Text files per tfrecord") #set to "25" based on the existing experience.
+parser.add_argument("--files_per", type=int, default=100000, help="Text files per tfrecord") #set to "25" based on the existing experience.
 parser.add_argument("--name", type=str, default="code_clippy", #Adding code_clippy
                     help="Name of output files will be name_i.tfrecords where i is the number of the file")
 parser.add_argument("--output_dir", type=str, default="./tfrecords", help="Where to put tfrecords")
