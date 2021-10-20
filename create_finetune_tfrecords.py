@@ -153,7 +153,7 @@ def archive_to_tokens(f, encoder, args, prefix=[]):
         yield split_list_code_clippy(prefix + tokens, args.chunk_size,file_name)  # split into n_ctx + 1 size chunks
         prefix = []
     DATA_STATS[f] = reader.filter_data_class.stat_extension
-    dynamic_stats.writelines(str({f:reader.filter_data_class.stat_extension})+"\n")
+    dynamic_stats.writelines(json.dumps({f:reader.filter_data_class.stat_extension})+"\n")
 
 def write_files(files, files_per, output_dir, out_name, start_no, write_remainder=False, process_no=None):
     # writes a list of files to .tfrecords
