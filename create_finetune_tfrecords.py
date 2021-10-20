@@ -31,8 +31,8 @@ parser.add_argument("--encoder_path", type=str,
                     help="Path to encoder files, or leave unspecified to use GPT2 tokenizer")
 parser.add_argument("--model_name", type=str, default="gpt", help="Tokenizer Model to use")
 parser.add_argument("--minimum_size", type=int, default=100, help="Minimum size a document has to be to be included")
-parser.add_argument("--ftfy", action="store_false", help="normalize with ftfy")
-parser.add_argument("--wikitext-detokenize", action="store_false", help="use wikitext detokenizer")
+parser.add_argument("--ftfy", action="store_true", help="normalize with ftfy")
+parser.add_argument("--wikitext-detokenize", action="store_true", help="use wikitext detokenizer")
 parser.add_argument("--separator", nargs="+", type=int, default=[50256],
                     help="separator to place between files in chunk mode")
 parser.add_argument("--chunk_size", type=int, default=2048, help="How big a chunk should be in chunk mode. "
@@ -51,34 +51,35 @@ assert len(args.separator) == 1
 
 def wikitext_detokenizer(string):
     # contractions
-    string = string.replace("s '", "s'")
-    string = re.sub(r"/' [0-9]/", r"/'[0-9]/", string)
-    # number separators
-    string = string.replace(" @-@ ", "-")
-    string = string.replace(" @,@ ", ",")
-    string = string.replace(" @.@ ", ".")
-    # punctuation
-    string = string.replace(" : ", ": ")
-    string = string.replace(" ; ", "; ")
-    string = string.replace(" . ", ". ")
-    string = string.replace(" ! ", "! ")
-    string = string.replace(" ? ", "? ")
-    string = string.replace(" , ", ", ")
-    # double brackets
-    string = re.sub(r"\(\s*([^\)]*?)\s*\)", r"(\1)", string)
-    string = re.sub(r"\[\s*([^\]]*?)\s*\]", r"[\1]", string)
-    string = re.sub(r"{\s*([^}]*?)\s*}", r"{\1}", string)
-    string = re.sub(r"\"\s*([^\"]*?)\s*\"", r'"\1"', string)
-    string = re.sub(r"'\s*([^']*?)\s*'", r"'\1'", string)
-    # miscellaneous
-    string = string.replace("= = = =", "====")
-    string = string.replace("= = =", "===")
-    string = string.replace("= =", "==")
-    string = string.replace(" " + chr(176) + " ", chr(176))
-    string = string.replace(" \n", "\n")
-    string = string.replace("\n ", "\n")
-    string = string.replace(" N ", " 1 ")
-    string = string.replace(" 's", "'s")
+    # print("Coming here....")
+    # string = string.replace("s '", "s'")
+    # string = re.sub(r"/' [0-9]/", r"/'[0-9]/", string)
+    # # number separators
+    # string = string.replace(" @-@ ", "-")
+    # string = string.replace(" @,@ ", ",")
+    # string = string.replace(" @.@ ", ".")
+    # # punctuation
+    # string = string.replace(" : ", ": ")
+    # string = string.replace(" ; ", "; ")
+    # string = string.replace(" . ", ". ")
+    # string = string.replace(" ! ", "! ")
+    # string = string.replace(" ? ", "? ")
+    # string = string.replace(" , ", ", ")
+    # # double brackets
+    # string = re.sub(r"\(\s*([^\)]*?)\s*\)", r"(\1)", string)
+    # string = re.sub(r"\[\s*([^\]]*?)\s*\]", r"[\1]", string)
+    # string = re.sub(r"{\s*([^}]*?)\s*}", r"{\1}", string)
+    # string = re.sub(r"\"\s*([^\"]*?)\s*\"", r'"\1"', string)
+    # string = re.sub(r"'\s*([^']*?)\s*'", r"'\1'", string)
+    # # miscellaneous
+    # string = string.replace("= = = =", "====")
+    # string = string.replace("= = =", "===")
+    # string = string.replace("= =", "==")
+    # string = string.replace(" " + chr(176) + " ", chr(176))
+    # string = string.replace(" \n", "\n")
+    # string = string.replace("\n ", "\n")
+    # string = string.replace(" N ", " 1 ")
+    # string = string.replace(" 's", "'s")
 
     return string
 
@@ -134,8 +135,10 @@ def archive_to_tokens(f, encoder, args, prefix=[]):
     reader = Reader(f,r"mesh-transformer-jax/code_clippy_lm_dataformat/lm_dataformat/extension.json") #hardcoded path
     for doc in reader.stream_data(threaded=False):
         if args.ftfy:  # fix text with ftfy if specified
+            print(args.ftfy)
             doc = ftfy.fix_text(doc, normalization='NFKC')
         if args.wikitext_detokenize:
+            print(args.wikitext_detokenize)
             doc = wikitext_detokenizer(doc)
         #TODO: Add
         DATA_STATS[f] = (reader.filter_data_class.stat_extension)
@@ -214,7 +217,7 @@ def create_tfrecords(params, write_remainder=True, write_every_n_files=1, save_c
     data_to_prepend = []
     tokenized_files_array = []
 
-    for f in files:
+    for f in tqdm(files):
         for tokenized_files in archive_to_tokens(f, enc, args, prefix=data_to_prepend):
             files_processed += 1
             if files_processed < resume_files_processed:
