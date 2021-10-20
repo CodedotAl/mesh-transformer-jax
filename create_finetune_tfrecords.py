@@ -135,9 +135,10 @@ def archive_to_tokens(f, encoder, args, prefix=[]):
     reader = Reader(f,r"mesh-transformer-jax/code_clippy_lm_dataformat/lm_dataformat/extension.json") #hardcoded path
     for doc in reader.stream_data(threaded=False):
         if args.ftfy:  # fix text with ftfy if specified
-            print(args.ftfy)
+            print("ftfy is running....")
             doc = ftfy.fix_text(doc, normalization='NFKC')
         if args.wikitext_detokenize:
+            print("wiki_detokenize is running.")
             print(args.wikitext_detokenize)
             doc = wikitext_detokenizer(doc)
         #TODO: Add
