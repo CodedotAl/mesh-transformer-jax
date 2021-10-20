@@ -16,6 +16,7 @@ import json
 #GLOBAL
 DATA_STATS = {}
 CODE_CLIPPY_SPECIAL_IDENTIFIER = r""
+ 
 #END-GLOBAL
 
 logging.getLogger("transformers").setLevel(logging.ERROR)
@@ -47,6 +48,9 @@ if not args.output_dir.endswith("/"):
 if not args.input_dir.endswith("/"):
     args.input_dir = args.input_dir + "/"
 assert len(args.separator) == 1
+
+dyn_log_stat_path = os.path.join(r"mesh-transformer-jax",r"dynamic_stat_logs",r"pl_stat_"+args.log_idt+r".json")
+dynamic_stats = open(dyn_log_stat_path, 'w')
 
 
 def wikitext_detokenizer(string):
@@ -142,12 +146,14 @@ def archive_to_tokens(f, encoder, args, prefix=[]):
             print(args.wikitext_detokenize)
             doc = wikitext_detokenizer(doc)
         #TODO: Add
-        DATA_STATS[f] = (reader.filter_data_class.stat_extension)
+
+
         tokens = encoder.encode(doc) + args.separator  # read document from lmd and append separator token
         file_name = encoder.encode(doc.split(r"_#@#_")[0]+r" _#@#_\n")
         yield split_list_code_clippy(prefix + tokens, args.chunk_size,file_name)  # split into n_ctx + 1 size chunks
         prefix = []
-
+    DATA_STATS[f] = reader.filter_data_class.stat_extension
+    dynamic_stats.writelines(str({f:reader.filter_data_class.stat_extension})+"\n")
 
 def write_files(files, files_per, output_dir, out_name, start_no, write_remainder=False, process_no=None):
     # writes a list of files to .tfrecords
@@ -306,5 +312,4 @@ if __name__ == "__main__":
         results = create_tfrecords_mp(files, args)
     else:
         results = create_tfrecords((files, args, 0), display_pbar=True)
-    print(results)
     log_stat_json(DATA_STATS,args.log_idt) #logging final file_level statistics
