@@ -1,3 +1,5 @@
 *.pyc
 *.pprof
 /ckpt/
+stat_logs
+dynamic_stat_logs
