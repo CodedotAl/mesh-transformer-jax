@@ -25,7 +25,9 @@
     "model_dir": "code_clippy_6B",
   
     "train_set": "code_clippy.train.index",
-    "val_set": "code_clippy.val.index",
+    "val_set": {
+	    "cc": "code_clippy.val.index"
+    },
   
     "eval_harness_tasks": [],
   
