@@ -399,6 +399,7 @@ if __name__ == "__main__":
                 "train/learning_rate": float(scheduler(network.state["opt_state"][-1].count[0].item())),
                 "sequences_processed": sequences_processed,
                 "tokens_processed": tokens_processed,
+                #visualize clipped gradients
                 # "clip_global_gradient_norm": clip_by_global_norm(1)[1]
             }
             wandb_stats.update(noise_scale_stats)
