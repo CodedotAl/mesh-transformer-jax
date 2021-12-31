@@ -10,19 +10,19 @@
     "seq": 2048,
     "cores_per_replica": 8,
     "per_replica_batch": 1,
-    "gradient_accumulation_steps": 16,
+    "gradient_accumulation_steps": 32, 
   
-    "warmup_steps": 3000,
-    "anneal_steps": 300000,
-    "lr": 1.2e-4,
-    "end_lr": 1.2e-5,
+    "warmup_steps": 6200,
+    "anneal_steps": 613800,
+    "lr": 1e-5,
+    "end_lr": 1e-6,
     "weight_decay": 0.1,
-    "total_steps": 350000,
+    "total_steps": 620000,
   
     "tpu_size": 8,
   
     "bucket": "code-clippy-bucket",
-    "model_dir": "code_clippy_6B",
+    "model_dir": "code_clippy_6B_v2",
   
     "train_set": "code_clippy.train.index",
     "val_set": {
@@ -36,7 +36,7 @@
     "ckpt_every": 500,
     "keep_every": 10000,
   
-    "name": "code_clippy_6B",
+    "name": "code_clippy_6B_v2",
     "wandb_project": "mesh-transformer-jax",
-    "comment": ""
+    "comment": "Decreased learning rate and increased gradient steps"
   }
