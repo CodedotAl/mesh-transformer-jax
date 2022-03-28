@@ -51,8 +51,13 @@ else:
     list_files = os.popen(f'gsutil ls -r gs://{args.gs_project_id}/{root_dir}').read().split('\n')
     train_indexes = [f for f in list_files if 'train' in str(f) and '.tfrecords' in str(f)]
     val_indexes = [f for f in list_files if 'valid' in str(f) and '.tfrecords' in str(f)]
+
 with open(output_dir / "code_clippy.train.index", "w") as f:
     f.write("\n".join(train_indexes))
 
 with open(output_dir / "code_clippy.val.index", "w") as f:
     f.write("\n".join(val_indexes))
+
+
+
+    
