@@ -106,6 +106,7 @@ def save(network, step, bucket, path, mp, aux=None, keep_n=3, delete_old=True):
 
 
 def train_step(network, data):
+
     inputs = {
         "obs": data[:, :, :-1],
         "target": data[:, :, 1:],
@@ -324,9 +325,14 @@ if __name__ == "__main__":
                 exit()
 
             start = time.time()
-            loss, last_loss, grad_norm, grad_norm_micro = train_step(
-                network, train_dataset.get_samples()
-            )
+            try:
+                 loss, last_loss, grad_norm, grad_norm_micro = train_step(
+                        network, train_dataset.get_samples()
+                 )
+            except:
+                print(f'Skipped this batch bc of faulty sample.\n File name:{train_dataset.get_state()}')
+                wandb.log(train_dataset.get_state(),step)
+                continue
             step += 1
 
             steps_per_sec = 1 / (time.time() - start)
@@ -393,6 +399,8 @@ if __name__ == "__main__":
                 "train/learning_rate": float(scheduler(network.state["opt_state"][-1].count[0].item())),
                 "sequences_processed": sequences_processed,
                 "tokens_processed": tokens_processed,
+                #visualize clipped gradients
+                # "clip_global_gradient_norm": clip_by_global_norm(1)[1]
             }
             wandb_stats.update(noise_scale_stats)
 
